@@ -3,7 +3,7 @@ IrcPoster
 
 Small service running as a proxy to push messages to IRC
 
-Example:
+Usage:
 --------
 
 Start the service in the background on the git server:
