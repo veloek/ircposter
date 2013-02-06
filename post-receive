@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Post commit messages to IRC
+while read oval nval ref ; do
+    if expr "$ref" : "^refs/heads/"; then
+        if expr "$oval" : '0*$' >/dev/null
+        then
+            revspec=$nval
+        else
+            revspec=$oval..$nval
+        fi
+        other_branches=$(git for-each-ref --format='%(refname)' refs/heads/ |
+            grep -F -v $ref)
+
+	# Get the repo name
+	repo=`pwd |awk -F/ '{print $NF}' |cut -d . -f 1`
+
+	for revision in `git rev-parse --not $other_branches | git rev-list --stdin $revspec |tac`; do
+	    commit=`git log $revision~1..$revision --pretty=format:"%h -%an, %ar: %s" `
+
+	    # Send the information to the IrcPoster service
+	    echo "($repo)$commit" |telnet localhost 1337 > /dev/null 2>&1
+        done
+    fi
+done
